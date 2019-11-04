@@ -11,13 +11,21 @@ namespace Transliterate
     {
         private TcpClient client;
         private Text log;
+        private string text;
     
         // Start is called before the first frame update
         void Start()
         {
+            text = "NULL";
             log = GetComponent<Text>();
             client = GetComponent<TcpClient>();
-            client.OnServerMessage += OnMessage;
+            client.OnConnection += OnConnection;
+            client.OnMessage += OnMessage;
+        }
+
+        void OnConnection()
+        {
+            text = "Connected to server";
         }
 
         void OnMessage(byte[] data)
@@ -26,19 +34,24 @@ namespace Transliterate
             switch (msg.Type)
             {
                 case MessageType.LoginUnsuccessful:
-                    log.text = "Incorrect Password";
+                    text = "Incorrect Password";
                     break;
                 case MessageType.LoginSuccessful:
                     var requests = Utils.FromByteArray<ArrayList>(msg.Value);
                     foreach (var request in requests)
                     {
-                        log.text += $"{Utils.FromByteArray<Request>((byte[])request)}\n";
+                        text += $"{Utils.FromByteArray<Request>((byte[])request)}\n";
                     }
                     break;
                 case MessageType.SaveSuccessful:
-                    log.text = "Saved Successfully";
+                    text = "Saved Successfully";
                     break;
             }
+        }
+
+        void Update()
+        {
+            log.text = text;
         }
 
         public void Login()
@@ -53,7 +66,7 @@ namespace Transliterate
     
         private static byte[] MessageFactory(MessageType type, byte[] value)
         {
-            return (new Message() { Type = type, Value = value }).ToBytes();
+            return new Message { Type = type, Value = value }.ToBytes();
         }
     }
 }

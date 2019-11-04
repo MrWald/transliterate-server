@@ -25,7 +25,6 @@ namespace Manager
         }
         public static void ReadBytes(NetworkStream stream, Action<byte[]> callback)
         {
-
             var messageSize = new byte[sizeof(int)];
             stream.Read(messageSize, 0, messageSize.Length);
             if (BitConverter.IsLittleEndian)

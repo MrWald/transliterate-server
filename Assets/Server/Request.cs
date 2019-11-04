@@ -1,8 +1,10 @@
 using System;
+using System.Runtime.Serialization;
 
 namespace Server
 {
-    public class Request
+    [Serializable]
+    public class Request : ISerializable
     {
         public string User { get; }
         public string Text { get; }
@@ -15,6 +17,28 @@ namespace Server
             Text = text;
             TransText = transText;
             Date = date;
+        }
+        
+        //Deserialization constructor.
+        public Request(SerializationInfo info, StreamingContext ctxt)
+        {
+            //Get the values from info and assign them to the appropriate properties
+            User = (string)info.GetValue("User", typeof(string));
+            Text = (string)info.GetValue("Text", typeof(string));
+            TransText = (string)info.GetValue("TransText", typeof(string));
+            Date = (DateTime)info.GetValue("Date", typeof(DateTime));
+        }
+        
+        //Serialization function.
+        public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
+        {
+            //You can use any custom name for your name-value pair. But make sure you
+            // read the values with the same name. For ex:- If you write EmpId as "EmployeeId"
+            // then you should read the same with "EmployeeId"
+            info.AddValue("User", User);
+            info.AddValue("Text", Text);
+            info.AddValue("TransText", TransText);
+            info.AddValue("Date", Date);
         }
 
         public override string ToString()

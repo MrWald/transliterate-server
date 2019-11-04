@@ -26,8 +26,7 @@ namespace Server
         }
         public void OnSending()
         {
-            if (!receiver.Connected) return;
-            if (Queue.Count <= 0) return;
+            if (!receiver.Connected || Queue.Count <= 0) return;
             try
             {
                 var stream = receiver.GetStream();
@@ -50,7 +49,6 @@ namespace Server
                 var stream = receiver.GetStream();
                 try
                 {
-
                     Utils.ReadBytes(stream, delegate (byte[] message)
                     {
                         OnMessage?.Invoke(this, message);
@@ -63,8 +61,6 @@ namespace Server
                     ConsoleMessenger.Log(ConsoleMessenger.Prefix.Error, "Close connection, because - " + e.Message);
                     Close();
                 }
-            
-
             }
             else
             {

@@ -18,7 +18,7 @@ namespace Manager
         private const string ServerCode = "Server";
         private const string ServerVersion = "1.0.0";
         public event ConnectedToServer OnConnection;
-        public event OnServerMessage OnServerMessage;
+        public event OnServerMessage OnMessage;
 
         private void Start ()
         {
@@ -74,7 +74,7 @@ namespace Manager
             }
 
             OnConnection?.Invoke();
-            ReadServerMessage();      
+            ReadServerMessage();
         }
 
         private void ReadServerMessage()
@@ -85,7 +85,7 @@ namespace Manager
             {
                 Utils.ReadBytes(stream, delegate (byte[] bytes)
                 {
-                    OnServerMessage?.Invoke(bytes);
+                    OnMessage?.Invoke(bytes);
                     Thread.Sleep(100);
 
                     ReadServerMessage();
