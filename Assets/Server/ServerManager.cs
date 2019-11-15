@@ -86,7 +86,7 @@ namespace Server
             reader = cmd.ExecuteReader();
             var requests = new ArrayList();
             while(reader.Read())
-                requests.Add(Manager.Utils.ToByteArray(new Request(reader.GetString(4), reader.GetString(1), reader.GetString(2), reader.GetDateTime(3))));
+                requests.Add(Manager.Utils.ToByteArray(new Request(reader.GetString("user"), reader.GetString("txt"), reader.GetString("trans"), reader.GetDateTime("dateOfRequest"))));
             reader.Close();
             var bytes = requests.Count==0?new byte[0]:Manager.Utils.ToByteArray(requests);
             return bytes;
