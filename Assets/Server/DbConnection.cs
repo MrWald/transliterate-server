@@ -1,6 +1,7 @@
 using System;
 using MySql.Data.MySqlClient;
 using UnityEngine;
+using System.IO;
 
 namespace Server
 {
@@ -36,7 +37,7 @@ namespace Server
                 Connection = new MySqlConnection(conString);
                 var evolve = new Evolve.Evolve(Connection, msg => ConsoleMessenger.Log(ConsoleMessenger.Prefix.System, msg))
                 {
-                    Locations = new[] { $"{dir}/db/migrations" },
+                    Locations = new[] { $"{dir}" + Path.DirectorySeparatorChar + "db" + Path.DirectorySeparatorChar + "migrations" },
                     IsEraseDisabled = true,
                 };
 
