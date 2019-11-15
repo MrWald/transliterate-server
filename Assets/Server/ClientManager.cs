@@ -67,10 +67,9 @@ namespace Server
                 Close();
             }
         }
-        public void Close(bool update = true)
+        public void Close()
         {
             receiver.Close();
-            if(update) server.CloseConnection(this);
         }
     }
     public delegate void OnClientMessage(ClientManager clientManager, byte[] message);

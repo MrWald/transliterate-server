@@ -14,7 +14,6 @@ namespace Server
         {
             server = Server.Init();
             server.OnMessage += ServerOnMessage;
-
         }
         public void Stop()
         {

@@ -13,10 +13,16 @@ public class ServerController : MonoBehaviour
 
     private void Start()
     {
+        Screen.SetResolution(1280, 800, false);
         manager?.Stop();
         status.text = "Stopped";
         statusImg.sprite = stopped;
         manager = new ServerManager();
+    }
+
+    private void OnDestroy()
+    {
+        manager.Stop();
     }
 
     public void StartServer()

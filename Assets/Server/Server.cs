@@ -42,6 +42,10 @@ namespace Server
             ConsoleMessenger.Log(ConsoleMessenger.Prefix.Message, "Server Started");
             DbCon = DbConnection.Instance();
             DbCon.DatabaseName = "users";
+            if(!DbCon.IsConnect())
+            {
+                ConsoleMessenger.Log(ConsoleMessenger.Prefix.Error, "Cannot connect to DB");
+            }
             serverThread = new Thread(FactoryTcpListener) {Priority = ThreadPriority.AboveNormal };
 
             broadcastThread = new Thread(delegate ()
@@ -125,15 +129,6 @@ namespace Server
             });
             writingThread.Start();
         }
-        public void CloseConnection(ClientManager clientManager)
-        {
-            ConsoleMessenger.Log(ConsoleMessenger.Prefix.Message, "Client disconnected");
-            lock (connectedClients)
-            {
-                connectedClients.Remove(clientManager);
-            }
-            listener.BeginAcceptTcpClient(OnClientAccepted, null);
-        }
         private IEnumerable<int> BroadCastAboutServer()
         {
             var client = new UdpClient();
@@ -169,7 +164,11 @@ namespace Server
         {
             lock (connectedClients)
             {
-                connectedClients.ForEach(delegate (ClientManager client) { client.Close(); });
+                connectedClients.ForEach(delegate (ClientManager client) { 
+                    ConsoleMessenger.Log(ConsoleMessenger.Prefix.Message, "Client disconnected");
+                    listener.BeginAcceptTcpClient(OnClientAccepted, null);
+                    client.Close(); 
+                });
                 connectedClients.Clear();
             }
             listener.Stop();
