@@ -1,5 +1,5 @@
 using System;
-using MySql.Data.MySqlClient;
+using System.Data.SqlClient;
 using UnityEngine;
 using System.IO;
 
@@ -15,7 +15,7 @@ namespace Server
 
         //public string Password { get; set; }
 
-        public MySqlConnection Connection { get; private set; }
+        public SqlConnection Connection { get; private set; }
 
         private static DbConnection _instance;
         public static DbConnection Instance()
@@ -33,8 +33,8 @@ namespace Server
                 return false;
             try
             {
-                var conString = $"server=127.0.0.1;uid=root;pwd=root;database={DatabaseName}";
-                Connection = new MySqlConnection(conString);
+                var conString = $"Server=tcp:kmalfa.database.windows.net,1433;Initial Catalog={DatabaseName};Persist Security Info=False;User ID=boublik;Password=moop11!!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+                Connection = new SqlConnection(conString);
                 var evolve = new Evolve.Evolve(Connection, msg => ConsoleMessenger.Log(ConsoleMessenger.Prefix.System, msg))
                 {
                     Locations = new[] { $"{dir}" + Path.DirectorySeparatorChar + "db" + Path.DirectorySeparatorChar + "migrations" },

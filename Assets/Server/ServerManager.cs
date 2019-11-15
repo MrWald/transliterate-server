@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Text;
-using MySql.Data.MySqlClient;
+using System.Data.SqlClient;
 
 namespace Server
 {
@@ -55,21 +55,21 @@ namespace Server
                 ConsoleMessenger.Log(ConsoleMessenger.Prefix.Error, "Cannot connect to DB");
                 return null;
             }
-            var query = $"SELECT * FROM user WHERE login = '{login}'";
-            var cmd = new MySqlCommand(query, server.DbCon.Connection);
+            var query = $"SELECT * FROM users WHERE login = '{login}'";
+            var cmd = new SqlCommand(query, server.DbCon.Connection);
             var reader = cmd.ExecuteReader();
             if (!reader.Read())
             {
                 reader.Close();
-                query = $"INSERT INTO user VALUES ('{login}', '{password}')";
-                cmd = new MySqlCommand(query, server.DbCon.Connection);
+                query = $"INSERT INTO users VALUES ('{login}', '{password}')";
+                cmd = new SqlCommand(query, server.DbCon.Connection);
                 cmd.ExecuteNonQuery();
             }
             else
             {
                 reader.Close();
-                query = $"SELECT * FROM user WHERE login = '{login}' AND password = '{password}'";
-                cmd = new MySqlCommand(query, server.DbCon.Connection);
+                query = $"SELECT * FROM users WHERE login = '{login}' AND password = '{password}'";
+                cmd = new SqlCommand(query, server.DbCon.Connection);
                 reader = cmd.ExecuteReader();
                 if (!reader.Read())
                 {
@@ -80,12 +80,12 @@ namespace Server
             reader.Close();
             ConsoleMessenger.Log(ConsoleMessenger.Prefix.Message, "Logged in " + login);
             clientManager.User = login;
-            query = $"SELECT * FROM request WHERE user = '{login}'";
-            cmd = new MySqlCommand(query, server.DbCon.Connection);
+            query = $"SELECT * FROM requests WHERE username = '{login}'";
+            cmd = new SqlCommand(query, server.DbCon.Connection);
             reader = cmd.ExecuteReader();
             var requests = new ArrayList();
             while(reader.Read())
-                requests.Add(Manager.Utils.ToByteArray(new Request(reader.GetString("user"), reader.GetString("txt"), reader.GetString("trans"), reader.GetDateTime("dateOfRequest"))));
+                requests.Add(Manager.Utils.ToByteArray(new Request(reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetDateTime(0))));
             reader.Close();
             var bytes = requests.Count==0?new byte[0]:Manager.Utils.ToByteArray(requests);
             return bytes;
@@ -94,8 +94,8 @@ namespace Server
         private void OnSaveRequest(ClientManager clientManager, Message message)
         {
             var texts = Encoding.ASCII.GetString(message.Value).Split(';');
-            var query = $"INSERT INTO request(txt, trans, dateOfRequest, user) VALUES ('{texts[0]}', '{texts[1]}', '{DateTime.Now.ToString("yy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)}', '{clientManager.User}')";
-            var cmd = new MySqlCommand(query, server.DbCon.Connection);
+            var query = $"INSERT INTO requests(txt, trans, dateOfRequest, username) VALUES ('{texts[0]}', '{texts[1]}', '{DateTime.Now.ToString("yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture)}', '{clientManager.User}')";
+            var cmd = new SqlCommand(query, server.DbCon.Connection);
             try
             {
                 cmd.ExecuteNonQuery();
