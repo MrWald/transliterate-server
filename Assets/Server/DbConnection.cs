@@ -1,13 +1,12 @@
 using System;
 using System.Data.SqlClient;
-using UnityEngine;
 using System.IO;
 
 namespace Server
 {
     public class DbConnection
     {
-        private static readonly string dir = Application.dataPath;
+        public static string DIR;
         private DbConnection()
         { }
 
@@ -37,7 +36,7 @@ namespace Server
                 Connection = new SqlConnection(conString);
                 var evolve = new Evolve.Evolve(Connection, msg => ConsoleMessenger.Log(ConsoleMessenger.Prefix.System, msg))
                 {
-                    Locations = new[] { $"{dir}" + Path.DirectorySeparatorChar + "db" + Path.DirectorySeparatorChar + "migrations" },
+                    Locations = new[] { $"{DIR}" + Path.DirectorySeparatorChar + "db" + Path.DirectorySeparatorChar + "migrations" },
                     IsEraseDisabled = true,
                 };
 

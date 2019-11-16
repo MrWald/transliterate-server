@@ -3,6 +3,7 @@ using System.Collections;
 using System.Globalization;
 using System.Text;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace Server
 {
@@ -10,10 +11,12 @@ namespace Server
     {
         private Server server;
         
-        public void Start()
+        public async void Start()
         {
-            server = Server.Init();
-            server.OnMessage += ServerOnMessage;
+            await Task.Run(() => {
+                server = Server.Init();
+                server.OnMessage += ServerOnMessage;
+            });
         }
         public void Stop()
         {

@@ -13,6 +13,7 @@ public class ServerController : MonoBehaviour
 
     private void Start()
     {
+        DbConnection.DIR = Application.dataPath;
         Screen.SetResolution(1280, 800, false);
         manager?.Stop();
         status.text = "Stopped";
