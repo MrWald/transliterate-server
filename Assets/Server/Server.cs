@@ -42,7 +42,8 @@ namespace Server
             ConsoleMessenger.Log(ConsoleMessenger.Prefix.Message, "Server Started");
             DbCon = DbConnection.Instance();
             DbCon.DatabaseName = "users";
-            if(!DbCon.IsConnect())
+            DbCon.Password = "moop11!!";
+            if (!DbCon.IsConnect())
             {
                 ConsoleMessenger.Log(ConsoleMessenger.Prefix.Error, "Cannot connect to DB");
             }

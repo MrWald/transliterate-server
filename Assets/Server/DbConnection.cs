@@ -12,7 +12,7 @@ namespace Server
 
         public string DatabaseName { get; set; } = string.Empty;
 
-        //public string Password { get; set; }
+        public string Password { get; set; }
 
         public SqlConnection Connection { get; private set; }
 
@@ -32,14 +32,13 @@ namespace Server
                 return false;
             try
             {
-                var conString = $"Server=tcp:kmalfa.database.windows.net,1433;Initial Catalog={DatabaseName};Persist Security Info=False;User ID=boublik;Password=moop11!!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+                var conString = $"Server=tcp:kmalfa.database.windows.net,1433;Initial Catalog={DatabaseName};Persist Security Info=False;User ID=boublik;Password={Password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
                 Connection = new SqlConnection(conString);
                 var evolve = new Evolve.Evolve(Connection, msg => ConsoleMessenger.Log(ConsoleMessenger.Prefix.System, msg))
                 {
-                    Locations = new[] { $"{DIR}" + Path.DirectorySeparatorChar + "db" + Path.DirectorySeparatorChar + "migrations" },
+                    Locations = new[] { $"{DIR}{Path.DirectorySeparatorChar}db{Path.DirectorySeparatorChar}migrations{Path.DirectorySeparatorChar}" },
                     IsEraseDisabled = true,
                 };
-
                 evolve.Migrate();
             }
             catch (Exception ex)
@@ -47,7 +46,6 @@ namespace Server
                 ConsoleMessenger.Log(ConsoleMessenger.Prefix.Error, $"Database migration failed.{ex}");
                 throw;
             }
-            
             Connection.Open();
             ConsoleMessenger.Log(ConsoleMessenger.Prefix.Message, "Connected to Database");
             return true;
