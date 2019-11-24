@@ -96,7 +96,7 @@ namespace Server
 
         private void OnSaveRequest(ClientManager clientManager, Message message)
         {
-            var texts = Encoding.UTF8.GetString(message.Value).Split(';');
+            var texts = Encoding.Unicode.GetString(message.Value).Split(';');
             var query = $"INSERT INTO requests(txt, trans, dateOfRequest, username) VALUES ('{texts[0]}', '{texts[1]}', '{DateTime.Now.ToString("yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture)}', '{clientManager.User}')";
             var cmd = new SqlCommand(query, server.DbCon.Connection);
             try
