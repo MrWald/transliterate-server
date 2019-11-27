@@ -29,6 +29,9 @@ namespace Server
         LoginRequest,
         LoginSuccessful,
         LoginUnsuccessful,
+        SignUpRequest,
+        SignUpSuccessful,
+        SignUpUnsuccessful,
         SaveRequest,
         SaveSuccessful,
         SaveUnsuccessful

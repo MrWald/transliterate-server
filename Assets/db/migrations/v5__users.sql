@@ -1,0 +1,10 @@
+ALTER TABLE users
+DROP CONSTRAINT PK__users__7838F273572081E5;
+ALTER TABLE users
+ADD users_id INT IDENTITY NOT NULL;
+ALTER TABLE users
+ADD CONSTRAINT PK_user PRIMARY KEY (users_id);
+ALTER TABLE requests
+ADD creator_id INT NOT NULL;
+ALTER TABLE requests
+ADD CONSTRAINT FK_requests_userid FOREIGN KEY (creator_id) REFERENCES users(users_id);

@@ -1,0 +1,10 @@
+ALTER TABLE requests
+DROP CONSTRAINT PK__requests__14BEF1987534EC83;
+ALTER TABLE requests
+ADD request_id INT IDENTITY NOT NULL;
+ALTER TABLE requests
+ADD CONSTRAINT PK_requests PRIMARY KEY (request_id);
+ALTER TABLE requests
+DROP CONSTRAINT FK__requests__userna__4E88ABD4;
+ALTER TABLE requests
+DROP COLUMN username;
