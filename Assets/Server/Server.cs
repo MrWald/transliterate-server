@@ -41,12 +41,6 @@ namespace Server
             }
             ConsoleMessenger.Log(ConsoleMessenger.Prefix.Message, "Server Started");
             DbCon = DbConnection.Instance();
-            DbCon.DatabaseName = "users";
-            DbCon.Password = "moop11!!";
-            if (!DbCon.IsConnect())
-            {
-                ConsoleMessenger.Log(ConsoleMessenger.Prefix.Error, "Cannot connect to DB");
-            }
             serverThread = new Thread(FactoryTcpListener) {Priority = ThreadPriority.AboveNormal };
 
             broadcastThread = new Thread(delegate ()
@@ -176,7 +170,6 @@ namespace Server
             serverThread.Abort();
             writingThread?.Abort();
             broadcastThread.Abort();
-            DbCon.Close();
             Instance = null;
         }
     

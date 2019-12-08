@@ -33,7 +33,7 @@ namespace Server
                     OnLoginRequest(clientManager, message);
                     break;
                 case MessageType.SignUpRequest:
-
+                    OnSignUpRequest(clientManager, message);
                     break;
                 case MessageType.SaveRequest:
                     OnSaveRequest(clientManager, message);
@@ -49,12 +49,6 @@ namespace Server
             var login = data[0];
             var password = data[1];
             byte[] requests;
-            if (!server.DbCon.IsConnect())
-            {
-                ConsoleMessenger.Log(ConsoleMessenger.Prefix.Error, "Cannot connect to DB");
-                clientManager.SendMessage(MessageFactory(MessageType.LoginUnsuccessful, null));
-                return;
-            }
             requests = DbConnection.Instance().GetRequests(login, password);
             if (requests != null)
             {
@@ -73,12 +67,6 @@ namespace Server
             var data = Encoding.ASCII.GetString(message.Value).Split(';');
             var login = data[0];
             var password = data[1];
-            if (!server.DbCon.IsConnect())
-            {
-                ConsoleMessenger.Log(ConsoleMessenger.Prefix.Error, "Cannot connect to DB");
-                clientManager.SendMessage(MessageFactory(MessageType.SignUpUnsuccessful, null));
-                return;
-            }
             var success = DbConnection.Instance().SignUp(login, password);
             if (!success)
             {
@@ -95,7 +83,7 @@ namespace Server
             var texts = Encoding.Unicode.GetString(message.Value).Split(';');
             try
             {
-                DbConnection.Instance().SaveRequest(texts[0], texts[1], DateTime.Now.ToString("yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture), clientManager.User);
+                DbConnection.Instance().SaveRequest(texts[0], texts[1], DateTime.Now, clientManager.User);
             }
             catch (Exception e)
             {

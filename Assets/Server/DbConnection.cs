@@ -2,20 +2,38 @@ using System;
 using System.Collections;
 using System.Data.SqlClient;
 using System.IO;
+using Microsoft.EntityFrameworkCore;
 
 namespace Server
 {
-    public class DbConnection
+    public class DbConnection : DbContext
     {
         public static string DIR;
+
+        private static readonly string CONNECTION_STRING = "Server=tcp:kmalfa.database.windows.net,1433;Initial Catalog=users;Persist Security Info=False;User ID=boublik;Password=moop11!!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        public DbSet<User> Users { get; set; }
+        public DbSet<Request> Requests { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer(CONNECTION_STRING);
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<User>().HasKey(user => new { user.Users_id });
+            builder.Entity<Request>().HasKey(request => new { request.Request_id });
+        }
         private DbConnection()
-        { }
-
-        public string DatabaseName { get; set; } = string.Empty;
-
-        public string Password { get; set; }
-
-        public SqlConnection Connection { get; private set; }
+        { 
+            Database.EnsureCreated();
+            var evolve = new Evolve.Evolve(new SqlConnection(CONNECTION_STRING), msg => ConsoleMessenger.Log(ConsoleMessenger.Prefix.System, msg))
+            {
+                Locations = new[] { $"{DIR}{Path.DirectorySeparatorChar}db{Path.DirectorySeparatorChar}migrations{Path.DirectorySeparatorChar}" },
+                IsEraseDisabled = true,
+            };
+            evolve.Migrate();
+        }
 
         private static DbConnection _instance;
         public static DbConnection Instance()
@@ -23,88 +41,39 @@ namespace Server
             return _instance ?? (_instance = new DbConnection());
         }
 
-        public void SaveRequest(string original, string transliterated, string date, string user)
+        public void SaveRequest(string original, string transliterated, DateTime date, string user)
         {
-            var query = $"SELECT users_id FROM users WHERE username = '{user}'";
-            var cmd = new SqlCommand(query, Connection);
-            var reader = cmd.ExecuteReader();
-            reader.Read();
-            query = $"INSERT INTO requests(txt, trans, dateOfRequest, creator_id) VALUES (N'{original}', '{transliterated}', '{date}', {reader.GetInt32(0)})";
-            reader.Close();
-            cmd = new SqlCommand(query, Connection);
-            cmd.ExecuteNonQuery();
+            var userEntity = Users.SingleOrDefaultAsync(us => us.Login == user).Result;
+            Requests.Add(new Request () {Creator_id = userEntity.Users_id, Txt = original, Trans = transliterated, DateOfRequest = date});
+            SaveChanges();
         }
 
         public byte[] GetRequests(string login, string password)
         {
-            var query = $"SELECT * FROM users WHERE login = '{login}' AND password = '{password}'";
-            var cmd = new SqlCommand(query, Connection);
-            var reader = cmd.ExecuteReader();
-            if (!reader.Read())
-            {
-                reader.Close();
+            var userEntity = Users.SingleOrDefaultAsync(user => user.Login == login && user.Password == password).Result;
+            if (userEntity == null)
                 return null;
+            var requests = Requests.ToListAsync().Result.FindAll(request => request.Creator_id == userEntity.Users_id);
+            var result = new ArrayList();
+            foreach (var request in requests)
+            {
+                result.Add(Manager.Utils.ToByteArray(new RequestObject(userEntity.Login, request.Txt, request.Trans, request.DateOfRequest)));
             }
-            reader.Close();
-            query = $"SELECT * FROM requests WHERE creator_id = '{login}'";
-            cmd = new SqlCommand(query, Connection);
-            reader = cmd.ExecuteReader();
-            var requests = new ArrayList();
-            while(reader.Read())
-                requests.Add(Manager.Utils.ToByteArray(new Request(reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetDateTime(0))));
-            reader.Close();
-            var bytes = requests.Count==0?new byte[0]:Manager.Utils.ToByteArray(requests);
-            return bytes;
+            return result.Count==0?new byte[0]:Manager.Utils.ToByteArray(result);
         }
 
         public bool SignUp (string login, string password)
         {
-            var query = $"SELECT * FROM users WHERE login = '{login}'";
-            var cmd = new SqlCommand(query, Connection);
-            var reader = cmd.ExecuteReader();
-            var res = reader.Read();
-            reader.Close();
-            if (res)
-                return false;
-            query = $"INSERT INTO users VALUES ('{login}', '{password}')";
-            cmd = new SqlCommand(query, Connection);
-            cmd.ExecuteNonQuery();
-            return true;
-        }
-
-        public bool IsConnect()
-        {
-            if (Connection != null) 
+            var newUser = new User () { Login = login, Password = password };
+            var exists = Users.SingleOrDefaultAsync(user => user.Login == login).Result != null;
+            if (!exists)
             {
+                Users.Add(newUser);
+                SaveChanges();
                 return true;
             }
-            if (string.IsNullOrEmpty(DatabaseName))
+            else
                 return false;
-            try
-            {
-                var conString = $"Server=tcp:kmalfa.database.windows.net,1433;Initial Catalog={DatabaseName};Persist Security Info=False;User ID=boublik;Password={Password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
-                Connection = new SqlConnection(conString);
-                var evolve = new Evolve.Evolve(Connection, msg => ConsoleMessenger.Log(ConsoleMessenger.Prefix.System, msg))
-                {
-                    Locations = new[] { $"{DIR}{Path.DirectorySeparatorChar}db{Path.DirectorySeparatorChar}migrations{Path.DirectorySeparatorChar}" },
-                    IsEraseDisabled = true,
-                };
-                evolve.Migrate();
-            }
-            catch (Exception ex)
-            {
-                ConsoleMessenger.Log(ConsoleMessenger.Prefix.Error, $"Database migration failed.{ex}");
-                throw;
-            }
-            Connection.Open();
-            ConsoleMessenger.Log(ConsoleMessenger.Prefix.Message, "Connected to Database");
-            return true;
         }
-
-        public void Close()
-        {
-            Connection?.Close();
-            Connection = null;
-        }   
     }
 }
