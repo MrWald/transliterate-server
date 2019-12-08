@@ -4,14 +4,14 @@ using System.Runtime.Serialization;
 namespace Server
 {
     [Serializable]
-    public class Request : ISerializable
+    public class RequestObject : ISerializable
     {
         public string User { get; }
-        public string Text { get; }
-        public string TransText { get; }
-        public DateTime Date { get; }
+        public string Text { get; set; }
+        public string TransText { get; set; }
+        public DateTime Date { get; set; }
 
-        public Request(string user, string text, string transText, DateTime date)
+        public RequestObject(string user, string text, string transText, DateTime date)
         {
             User = user;
             Text = text;
@@ -20,7 +20,7 @@ namespace Server
         }
         
         //Deserialization constructor.
-        public Request(SerializationInfo info, StreamingContext ctxt)
+        public RequestObject(SerializationInfo info, StreamingContext ctxt)
         {
             //Get the values from info and assign them to the appropriate properties
             User = (string)info.GetValue("User", typeof(string));
